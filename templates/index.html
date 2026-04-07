@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Resume Matcher</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 50%;
+            margin: 60px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0px 8px 20px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        label {
+            font-weight: bold;
+            color: #444;
+        }
+
+        input[type="file"], textarea {
+            width: 100%;
+            margin-top: 8px;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        textarea {
+            resize: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #4facfe;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #007bff;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f1f9ff;
+        }
+
+        .score {
+            color: green;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            color: #d9534f;
+        }
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>📄 Resume Screening System</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+        <label>Upload Resume (PDF):</label>
+        <input type="file" name="resume" required>
+
+        <label>Paste Job Description:</label>
+        <textarea name="job_desc" rows="6" required></textarea>
+
+        <button type="submit">Check Match</button>
+    </form>
+
+    {% if score %}
+    <div class="result">
+        <p class="score">Match Score: {{score}}%</p>
+
+        <h4>Missing Skills:</h4>
+        <ul>
+            {% for skill in missing_skills %}
+                <li>{{skill}}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+</div>
+
+</body>
+</html>
