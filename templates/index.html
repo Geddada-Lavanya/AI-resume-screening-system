@@ -1,118 +1,538 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Resume Matcher</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description"
+          content="Compare your resume with a job description and identify missing skills.">
+
+    <title>Resume Screening System</title>
 
     <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --background: #eff6ff;
+            --surface: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+            --border: #cbd5e1;
+            --success: #15803d;
+            --success-bg: #f0fdf4;
+            --danger: #b91c1c;
+            --danger-bg: #fef2f2;
+            --missing: #9a3412;
+            --missing-bg: #fff7ed;
+            --radius: 14px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #4facfe, #00f2fe);
             margin: 0;
-            padding: 0;
+            min-height: 100vh;
+            padding: 30px 16px;
+            font-family: Arial, Helvetica, sans-serif;
+            color: var(--text);
+            background: linear-gradient(
+                135deg,
+                #dbeafe 0%,
+                #e0f2fe 50%,
+                #f0f9ff 100%
+            );
+            line-height: 1.6;
         }
 
         .container {
-            width: 50%;
-            margin: 60px auto;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0px 8px 20px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 850px;
+            margin: 20px auto;
+            padding: 32px;
+            background: var(--surface);
+            border: 1px solid rgba(203, 213, 225, 0.7);
+            border-radius: var(--radius);
+            box-shadow: 0 12px 35px rgba(30, 64, 175, 0.12);
         }
 
-        h2 {
+        .header {
             text-align: center;
-            color: #333;
+            margin-bottom: 28px;
+        }
+
+        .header h1 {
+            margin: 0 0 10px;
+            color: var(--primary-dark);
+            font-size: clamp(24px, 4vw, 32px);
+            line-height: 1.3;
+        }
+
+        .header p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
         }
 
         label {
-            font-weight: bold;
-            color: #444;
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: var(--text);
         }
 
-        input[type="file"], textarea {
+        .help-text {
+            display: block;
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        input[type="file"],
+        textarea {
+            display: block;
             width: 100%;
-            margin-top: 8px;
-            margin-bottom: 20px;
-            padding: 10px;
+            padding: 12px;
+            border: 1px solid var(--border);
             border-radius: 8px;
-            border: 1px solid #ccc;
+            background: #fff;
+            color: var(--text);
+            font: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="file"] {
+            font-size: 14px;
         }
 
         textarea {
-            resize: none;
+            min-height: 160px;
+            resize: vertical;
         }
 
-        button {
+        input:focus-visible,
+        textarea:focus-visible,
+        button:focus-visible {
+            outline: 3px solid #93c5fd;
+            outline-offset: 3px;
+            border-color: var(--primary);
+        }
+
+        .button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
             width: 100%;
-            padding: 12px;
-            background: #4facfe;
-            color: white;
+            min-height: 48px;
+            padding: 13px 18px;
             border: none;
             border-radius: 8px;
+            background: var(--primary);
+            color: #fff;
             font-size: 16px;
+            font-weight: 700;
             cursor: pointer;
-            transition: 0.3s;
+            transition: background 0.2s, transform 0.2s;
         }
 
-        button:hover {
-            background: #007bff;
+        .button:hover {
+            background: var(--primary-dark);
         }
 
-        .result {
-            margin-top: 20px;
-            padding: 15px;
+        .button:active {
+            transform: scale(0.99);
+        }
+
+        .button:disabled {
+            cursor: wait;
+            opacity: 0.75;
+        }
+
+        .notice {
+            margin: 18px 0;
+            padding: 13px 16px;
             border-radius: 8px;
-            background: #f1f9ff;
+            overflow-wrap: anywhere;
         }
 
-        .score {
-            color: green;
-            font-size: 20px;
-            font-weight: bold;
+        .error {
+            color: var(--danger);
+            background: var(--danger-bg);
+            border: 1px solid #fecaca;
         }
 
-        ul {
-            padding-left: 20px;
+        .results {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #e2e8f0;
         }
 
-        li {
-            color: #d9534f;
+        .results > h2 {
+            margin-top: 0;
+            color: var(--text);
+            font-size: 23px;
+        }
+
+        .score-card {
+            margin: 18px 0 26px;
+            padding: 22px;
+            text-align: center;
+            background: var(--background);
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+        }
+
+        .score-label {
+            margin: 0 0 4px;
+            color: var(--muted);
+            font-size: 15px;
+        }
+
+        .score-value {
+            margin: 0;
+            color: var(--primary-dark);
+            font-size: clamp(30px, 6vw, 42px);
+            font-weight: 800;
+            line-height: 1.3;
+        }
+
+        .score-note {
+            margin: 10px 0 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .skill-section {
+            margin: 20px 0;
+            padding: 18px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+        }
+
+        .skill-section h3 {
+            margin: 0 0 12px;
+            font-size: 18px;
+        }
+
+        .skill-section ul {
+            margin: 0;
+            padding-left: 24px;
+        }
+
+        .skill-section li {
+            margin: 6px 0;
+            overflow-wrap: anywhere;
+        }
+
+        .required {
+            background: #f8fafc;
+        }
+
+        .present {
+            background: var(--success-bg);
+            border-color: #bbf7d0;
+        }
+
+        .present h3,
+        .present li {
+            color: var(--success);
+        }
+
+        .missing {
+            background: var(--missing-bg);
+            border-color: #fed7aa;
+        }
+
+        .missing h3,
+        .missing li {
+            color: var(--missing);
+        }
+
+        .empty-state {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .footer {
+            margin-top: 26px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+
+            .container {
+                margin: 10px auto;
+                padding: 20px 16px;
+            }
+
+            .header {
+                margin-bottom: 22px;
+            }
+
+            .skill-section {
+                padding: 14px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                transition: none !important;
+            }
         }
     </style>
-
 </head>
 
 <body>
+    <main class="container">
 
-<div class="container">
+        <header class="header">
+            <h1>Resume Screening System</h1>
+            <p>
+                Compare your resume with a job description,
+                discover matching skills, and identify potential skill gaps.
+            </p>
+        </header>
 
-    <h2>📄 Resume Screening System</h2>
+        {% if error %}
+            <div class="notice error"
+                 role="alert"
+                 aria-live="assertive">
+                <strong>Error:</strong> {{ error }}
+            </div>
+        {% endif %}
 
-    <form method="POST" enctype="multipart/form-data">
-        <label>Upload Resume (PDF):</label>
-        <input type="file" name="resume" required>
+        <form id="resumeForm"
+              method="POST"
+              enctype="multipart/form-data">
 
-        <label>Paste Job Description:</label>
-        <textarea name="job_desc" rows="6" required></textarea>
+            <div class="form-group">
+                <label for="resume">Upload Your Resume (PDF)</label>
 
-        <button type="submit">Check Match</button>
-    </form>
+                <input
+                    type="file"
+                    id="resume"
+                    name="resume"
+                    accept=".pdf,application/pdf"
+                    aria-describedby="fileHelp fileName"
+                    required
+                >
 
-    {% if score %}
-    <div class="result">
-        <p class="score">Match Score: {{score}}%</p>
+                <small id="fileHelp" class="help-text">
+                    PDF format only. Maximum file size: 10 MB.
+                </small>
 
-        <h4>Missing Skills:</h4>
-        <ul>
-            {% for skill in missing_skills %}
-                <li>{{skill}}</li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
+                <small id="fileName"
+                       class="help-text"
+                       aria-live="polite">
+                    No file selected.
+                </small>
+            </div>
 
-</div>
+            <div class="form-group">
+                <label for="job_desc">Job Description</label>
 
+                <textarea
+                    id="job_desc"
+                    name="job_desc"
+                    placeholder="Paste the complete job description here..."
+                    aria-describedby="jobHelp"
+                    required
+                >{{ request.form.get('job_desc', '') }}</textarea>
+
+                <small id="jobHelp" class="help-text">
+                    Include the responsibilities, required skills,
+                    qualifications, and experience mentioned in the job posting.
+                </small>
+            </div>
+
+            <button type="submit" id="submitButton" class="button">
+                <span id="buttonText">Check Resume Match</span>
+                <span id="loadingText" hidden>Analyzing Resume...</span>
+            </button>
+
+        </form>
+
+        {% if score is not none %}
+            <section class="results"
+                     id="results"
+                     aria-labelledby="resultsHeading"
+                     aria-live="polite">
+
+                <h2 id="resultsHeading">Screening Results</h2>
+
+                <div class="score-card">
+                    <p class="score-label">Resume–Job Description Similarity</p>
+
+                    <p class="score-value">{{ score }}%</p>
+
+                    <p class="score-note">
+                        This score measures semantic text similarity.
+                        It is not a hiring probability or a guarantee
+                        that you meet every job requirement.
+                    </p>
+                </div>
+
+                <section class="skill-section required"
+                         aria-labelledby="requiredHeading">
+
+                    <h3 id="requiredHeading">
+                        Skills Required by the Job
+                        ({{ required_skills | length }})
+                    </h3>
+
+                    {% if required_skills %}
+                        <ul>
+                            {% for skill in required_skills %}
+                                <li>{{ skill }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="empty-state">
+                            No skills from the current catalog were
+                            detected in the job description.
+                        </p>
+                    {% endif %}
+                </section>
+
+                <section class="skill-section present"
+                         aria-labelledby="presentHeading">
+
+                    <h3 id="presentHeading">
+                        Skills Found in Resume
+                        ({{ present_skills | length }})
+                    </h3>
+
+                    {% if present_skills %}
+                        <ul>
+                            {% for skill in present_skills %}
+                                <li>{{ skill }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="empty-state">
+                            No matching catalog skills were detected
+                            in the resume.
+                        </p>
+                    {% endif %}
+                </section>
+
+                <section class="skill-section missing"
+                         aria-labelledby="missingHeading">
+
+                    <h3 id="missingHeading">Missing Skills</h3>
+
+                    <ul>
+                        {% for skill in missing_skills %}
+                            <li>{{ skill }}</li>
+                        {% endfor %}
+                    </ul>
+                </section>
+
+                <p class="help-text">
+                    Skill detection depends on the current skills catalog
+                    and its matching rules. Review the job requirements
+                    manually before deciding which skills to learn.
+                </p>
+
+            </section>
+        {% endif %}
+
+        <footer class="footer">
+            Resume Screening System · Built with Flask and Sentence-BERT
+        </footer>
+
+    </main>
+
+    <script>
+        const resumeInput = document.getElementById("resume");
+        const fileName = document.getElementById("fileName");
+        const form = document.getElementById("resumeForm");
+        const submitButton = document.getElementById("submitButton");
+        const buttonText = document.getElementById("buttonText");
+        const loadingText = document.getElementById("loadingText");
+
+        // Show the selected filename and validate basic file details.
+        resumeInput.addEventListener("change", function () {
+            const file = this.files[0];
+
+            if (!file) {
+                fileName.textContent = "No file selected.";
+                return;
+            }
+
+            fileName.textContent = "Selected: " + file.name;
+
+            if (!file.name.toLowerCase().endsWith(".pdf")) {
+                fileName.textContent = "Please select a PDF file.";
+                this.setCustomValidity("Please select a PDF file.");
+            } else if (file.size > 10 * 1024 * 1024) {
+                fileName.textContent = "File exceeds the 10 MB limit.";
+                this.setCustomValidity("Maximum file size is 10 MB.");
+            } else {
+                this.setCustomValidity("");
+                fileName.textContent =
+                    "Selected: " + file.name + " (" +
+                    (file.size / (1024 * 1024)).toFixed(2) + " MB)";
+            }
+        });
+
+        // Display a loading state after valid form submission.
+        form.addEventListener("submit", function (event) {
+            const file = resumeInput.files[0];
+
+            if (!file) {
+                event.preventDefault();
+                resumeInput.reportValidity();
+                return;
+            }
+
+            if (!file.name.toLowerCase().endsWith(".pdf")) {
+                event.preventDefault();
+                resumeInput.setCustomValidity("Please select a PDF file.");
+                resumeInput.reportValidity();
+                return;
+            }
+
+            if (file.size > 10 * 1024 * 1024) {
+                event.preventDefault();
+                resumeInput.setCustomValidity(
+                    "Maximum file size is 10 MB."
+                );
+                resumeInput.reportValidity();
+                return;
+            }
+
+            resumeInput.setCustomValidity("");
+
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                form.reportValidity();
+                return;
+            }
+
+            submitButton.disabled = true;
+            buttonText.hidden = true;
+            loadingText.hidden = false;
+        });
+    </script>
 </body>
 </html>
